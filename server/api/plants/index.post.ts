@@ -1,5 +1,6 @@
 // server/api/plants/index.post.ts
 import { db, handleDataTableTransactionError, undefinedToNull } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 import { mapPlantBodyToDbFields, validateFieldName, validateTaxonomyIds } from '~/server/utils/plants.db';
 import type { PlantTableRow } from '~/types/database';
 import type { PlantModelPost } from '~/types/plant-models';
@@ -8,7 +9,12 @@ import type { H3Event } from 'h3';
 
 const handler = async (event: H3Event, dbInstance = db) => {
   const context = 'plants';
+  // Get authenticated user from session
+  const user = await requireAuth(dbInstance, event);
   const body = (await readBody(event)) as PlantModelPost;
+
+  // Override user_id from session
+  body.user_id = user.id;
 
   validateFieldName(body);
   validateTaxonomyIds(body);

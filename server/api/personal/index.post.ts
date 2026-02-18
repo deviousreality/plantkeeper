@@ -1,8 +1,10 @@
 // server/api/personal/index.post.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 import type { CreatePersonalPlant } from '~/types/database';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const body = (await readBody(event)) as CreatePersonalPlant;
   console.log('Received personal plant data:', JSON.stringify(body, null, 2));
 

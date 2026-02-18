@@ -3,18 +3,13 @@
  * POST /api/propagation
  */
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 import type { H3Event } from 'h3';
 
 export default defineEventHandler(async (event: H3Event) => {
   try {
-    // Get user ID from auth
-    const user = event.context.user;
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        message: 'Unauthorized',
-      });
-    }
+    // Get authenticated user from session
+    const user = await requireAuth(db, event);
 
     // Parse request body
     const body = await readBody(event);

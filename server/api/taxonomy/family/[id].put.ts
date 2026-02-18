@@ -1,7 +1,9 @@
 // server/api/taxonomy/family/[id].put.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const idParam = event.context.params?.['id'];
   const id = idParam ? parseInt(idParam) : null;
 

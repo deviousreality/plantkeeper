@@ -26,7 +26,7 @@
         required />
 
       <v-alert
-        v-if="auth.error"
+        v-if="auth.error && auth.error.length > 0"
         type="error"
         class="mt-4"
         density="compact"
@@ -69,18 +69,15 @@ const username = ref('');
 const password = ref('');
 const isLoading = ref(false);
 
+// Clear any previous errors before rendering
+auth.error.value = null;
+
 // Helper function to safely get redirect URL
 function getRedirectUrl(redirectQuery: LocationQueryValue | LocationQueryValue[] | undefined): string {
   if (typeof redirectQuery === 'string') {
     return redirectQuery;
   }
   return '/plants';
-}
-
-// If already authenticated, redirect to intended page or home
-if (auth.isAuthenticated.value) {
-  const redirectTo = getRedirectUrl(route.query['redirect']);
-  await navigateTo(redirectTo);
 }
 
 const rules = {

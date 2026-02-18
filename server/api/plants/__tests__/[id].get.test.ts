@@ -5,6 +5,17 @@ import { type Database } from 'better-sqlite3';
 import { Plant } from '~/types';
 import type { H3Error } from 'h3';
 
+// Mock session authentication
+vi.mock('~/server/utils/session', () => ({
+  requireAuth: vi.fn((db, event) =>
+    Promise.resolve({
+      id: 1,
+      username: 'testuser',
+      email: 'test@example.com',
+    })
+  ),
+}));
+
 describe('GET /api/plants[id]', async () => {
   let dbInstance: Database;
   useH3TestUtils();
@@ -50,7 +61,7 @@ describe('GET /api/plants[id]', async () => {
 
     const event = createMockH3Event({
       body: {},
-       params: { id: '1' } ,
+      params: { id: '1' },
     });
 
     const response = (await handler.handler(event, dbInstance)) as Plant;

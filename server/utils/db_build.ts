@@ -7,7 +7,9 @@ import 'dotenv/config';
  * This builds the database schema by creating necessary tables.
  */
 
-const DATA_DIR = process.env['DATABASE_DIR'] || path.join(process.cwd(), './.data');
+const DATA_DIR = process.env['DATABASE_DIR'] 
+  ? path.resolve(process.env['DATABASE_DIR']) 
+  : path.join(process.cwd(), './.data');
 const DB_FILENAME = process.env['DATABASE_NAME'] || 'plant-keeper.db';
 
 // Function to build database tables
@@ -31,6 +33,22 @@ const buildTables = (db: Database.Database): void => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
+  `);
+
+  // Sessions table for authentication
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      created_at INTEGER DEFAULT (strftime('%s', 'now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Create index on expires_at for efficient cleanup queries
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at)
   `);
 
   // Plants table

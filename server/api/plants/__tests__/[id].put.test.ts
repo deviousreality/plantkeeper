@@ -4,7 +4,16 @@ import { createMockH3Event } from '~/test/mocks/h3-events';
 import { Database } from 'better-sqlite3';
 import { Plant, PlantModelPost } from '~/types';
 import type { H3Error } from 'h3';
-
+// Mock session authentication
+vi.mock('~/server/utils/session', () => ({
+  requireAuth: vi.fn((db, event) =>
+    Promise.resolve({
+      id: 1,
+      username: 'testuser',
+      email: 'test@example.com',
+    })
+  ),
+}));
 describe('PUT /api/plants/:id', async () => {
   let dbInstance: Database;
   useH3TestUtils();

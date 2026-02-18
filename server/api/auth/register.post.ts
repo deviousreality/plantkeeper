@@ -1,6 +1,7 @@
 // server/api/auth/register.post.ts
 import { db } from '~/server/utils/db';
 import { isApiError } from '~/server/utils/errors';
+import { createSession, setSessionCookie } from '~/server/utils/session';
 import bcrypt from 'bcryptjs';
 import type { RunResult } from 'better-sqlite3';
 
@@ -29,15 +30,18 @@ export default defineEventHandler(async (event) => {
     });
   }
   try {
+    // Normalize username to lowercase for case-insensitive comparison
+    const normalizedUsername = username.toLowerCase();
+
     // Check if user already exists
     const existingUser = db
       .prepare('SELECT id FROM users WHERE username = ? OR email = ?')
-      .get(username, email || null) as ExistingUser | undefined;
+      .get(normalizedUsername, email || null) as ExistingUser | undefined;
 
     if (existingUser) {
       throw createError({
         statusCode: 409,
-        message: 'Username or email already exists',
+        statusMessage: 'Username or email already exists',
       });
     }
 
@@ -47,11 +51,17 @@ export default defineEventHandler(async (event) => {
 
     const result = db
       .prepare('INSERT INTO users (username, password, email) VALUES (?, ?, ?)')
-      .run(username, hashedPassword, email || null) as InsertResult;
+      .run(normalizedUsername, hashedPassword, email || null) as InsertResult;
+
+    const userId = typeof result.lastInsertRowid === 'bigint' ? Number(result.lastInsertRowid) : result.lastInsertRowid;
+
+    // Create session and set HTTP-only cookie
+    const session = await createSession(db, userId);
+    setSessionCookie(event, session.id, session.expiresAt);
 
     return {
-      id: typeof result.lastInsertRowid === 'bigint' ? Number(result.lastInsertRowid) : result.lastInsertRowid,
-      username,
+      id: userId,
+      username: normalizedUsername,
       email,
     };
   } catch (err) {

@@ -4,57 +4,56 @@ import { ref, computed } from 'vue';
 export interface User {
   id: number;
   username: string;
-  email: string;
+  email: string | null;
 }
 
 export const useAuth = () => {
-  // Initialize user state - starts as null, will be set from localStorage on client
+  // Initialize user state - starts as null, will be verified from server session
   const user = useState<User | null>('auth.user', () => null);
+  const error = useState<string | null>('auth.error', () => null);
 
   const isAuthenticated = computed(() => !!user.value);
   const isLoading = ref(false);
-  const error = ref<string | null>(null);
 
-  // Check if user is already logged in (from storage)
-  const initAuth = () => {
+  // Check if user is already logged in (from server session)
+  const initAuth = async () => {
     if (process.client && !user.value) {
-      const storedUser = localStorage.getItem('plantkeeper_user');
+      try {
+        const response = await $fetch('/api/auth/session', {
+          credentials: 'include', // Important for cookies
+        });
 
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          user.value = parsed;
-          console.log('User auto-authenticated from storage:', parsed);
-        } catch (e) {
-          console.error('Error parsing stored user:', e);
-          localStorage.removeItem('plantkeeper_user');
-          localStorage.removeItem('plantkeeper_token');
+        if (response) {
+          user.value = response as User;
+          error.value = null;
+          console.log('User authenticated from session:', response);
+        } else {
+          // Not authenticated, clear state
+          user.value = null;
+          error.value = null;
         }
+      } catch (e) {
+        // Error fetching session, clear state
+        user.value = null;
+        error.value = null;
       }
     }
   };
 
   // Login function
   const login = async (username: string, password: string) => {
-    isLoading.value = true;
     error.value = null;
+    isLoading.value = true;
 
     try {
       const response = await $fetch('/api/auth/login', {
         method: 'POST',
         body: { username, password },
+        credentials: 'include', // Important for cookies
       });
 
       user.value = response as User;
-
-      // Store authentication data
-      if (process.client) {
-        localStorage.setItem('plantkeeper_user', JSON.stringify(user.value));
-        // Note: If your API returns a token, store it too
-        // localStorage.setItem('plantkeeper_token', response.token);
-      }
-
-      console.log('User logged in and stored:', user.value);
+      console.log('User logged in:', user.value);
       return { success: true };
     } catch (e: any) {
       error.value = e.data?.message || 'Login failed';
@@ -66,22 +65,17 @@ export const useAuth = () => {
 
   // Register function
   const register = async (username: string, password: string, email: string) => {
-    isLoading.value = true;
     error.value = null;
+    isLoading.value = true;
 
     try {
       const response = await $fetch('/api/auth/register', {
         method: 'POST',
         body: { username, password, email },
+        credentials: 'include', // Important for cookies
       });
 
       user.value = response as User;
-
-      // Store authentication data
-      if (process.client) {
-        localStorage.setItem('plantkeeper_user', JSON.stringify(user.value));
-      }
-
       return { success: true };
     } catch (e: any) {
       error.value = e.data?.message || 'Registration failed';
@@ -94,18 +88,14 @@ export const useAuth = () => {
   // Logout function
   const logout = async () => {
     try {
-      await $fetch('/api/auth/logout', { method: 'POST' });
+      await $fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Important for cookies
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       user.value = null;
-
-      // Clear stored authentication data
-      if (process.client) {
-        localStorage.removeItem('plantkeeper_user');
-        localStorage.removeItem('plantkeeper_token');
-      }
-
       await navigateTo('/login');
     }
   };
@@ -118,6 +108,6 @@ export const useAuth = () => {
     login,
     register,
     logout,
-    initAuth, // Expose the init function
+    initAuth,
   };
 };

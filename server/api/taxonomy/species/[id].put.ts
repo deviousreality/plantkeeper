@@ -1,7 +1,9 @@
 // server/api/taxonomy/species/[id].put.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const id = parseInt(event.context.params?.['id'] as string);
 
   if (!id) {

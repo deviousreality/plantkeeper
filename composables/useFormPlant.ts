@@ -100,7 +100,7 @@ export function useFormPlant(plantId?: number) {
         plant_zones: plantFormData.value?.plant_zones,
         personal_count: plantFormData.value?.personal_count, // Use personal count if provided
       } as PlantModelPost;
-
+      let plantId: number | undefined = plantFormData.value?.id;
       if (plantMethod === 'PUT' && plantId) {
         // update plant
         await $fetch(`/api/plants/${plantId}`, {
@@ -109,15 +109,15 @@ export function useFormPlant(plantId?: number) {
         });
       } else {
         // create new plant
-        const plant = (await $fetch('/api/plants', {
+        const plant = await $fetch('/api/plants', {
           method: plantMethod as 'POST',
           body: plantData,
-        })) as PlantModelPost;
+        });
 
         console.log('Received response:', plant);
 
         // Redirect to the new plant's page
-        const plantId = plant?.id;
+        plantId = plant?.id;
         if (!plantId) {
           console.error('No plant ID in response:', plant);
           throw new Error('No plant ID returned from server');

@@ -1,21 +1,15 @@
 // server/api/plants/index.get.ts
 import { db, handleDatatableFetchError } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 import type { PlantTableRow } from '~/types/database';
 import { plantTableRowToPlant } from '~/server/utils/plants.db';
 import type { H3Event } from 'h3';
 
 export async function handler(event: H3Event, dbInstance = db) {
   const context = 'photos';
-  // In a real app, you'd get the user id from session/token validation
-  const query = getQuery(event);
-  const userId = parseInt(query['userId'] as string);
-
-  if (!userId) {
-    throw createError({
-      statusCode: 500,
-      message: 'User ID is required',
-    });
-  }
+  // Get authenticated user from session
+  const user = await requireAuth(dbInstance, event);
+  const userId = user.id;
 
   try {
     const PlantTableRows = dbInstance

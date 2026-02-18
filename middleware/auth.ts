@@ -1,30 +1,10 @@
 // middleware/auth.ts
-export default defineNuxtRouteMiddleware((to) => {
-  // Skip auth check on server side - let client handle authentication
-  if (process.server) {
-    return;
-  }
-
+export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuth();
 
-  // Initialize auth if not already initialized
+  // Initialize auth from server session if not already done
   if (!auth.user.value) {
-    auth.initAuth();
-  }
-
-  // Double check with localStorage as fallback
-  if (!auth.isAuthenticated.value) {
-    const storedUser = localStorage.getItem('plantkeeper_user');
-    if (storedUser) {
-      try {
-        auth.initAuth();
-        if (auth.isAuthenticated.value) {
-          return;
-        }
-      } catch (e) {
-        console.error('Error in auth middleware:', e);
-      }
-    }
+    await auth.initAuth();
   }
 
   // If user is authenticated, allow access

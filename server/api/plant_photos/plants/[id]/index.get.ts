@@ -3,13 +3,13 @@ import { db, handleDatatableFetchError, validateFieldId } from '~/server/utils/d
 import { plantPhotosTableRowsToPlantPhotos } from '~/server/utils/plant_photos.db';
 import { PlantPhotosSizeType, PlantPhotosTableRow } from '~/types/database';
 
+import { requireAuth } from '~/server/utils/session';
+
 export default defineEventHandler(async (event) => {
   const context = 'plant_photos';
-
+  await requireAuth(db, event);
   const plant_id = parseInt(getRouterParam(event, 'id') as string) as number;
-
   validateFieldId(plant_id);
-
   try {
     const plantPhotosRows = db
       .prepare(
@@ -20,12 +20,9 @@ export default defineEventHandler(async (event) => {
       `
       )
       .all(plant_id, PlantPhotosSizeType.Small) as PlantPhotosTableRow[];
-
     // Convert to application type
     const plantPhotos = plantPhotosTableRowsToPlantPhotos(plantPhotosRows);
-
     console.log(`Read ${context} from database:`, JSON.stringify(plantPhotos, null, 2));
-
     return plantPhotos;
     // Get care logs for this plant
   } catch (error) {

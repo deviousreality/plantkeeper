@@ -1,10 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
-import { no } from 'vuetify/locale';
-
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 const isDevMode = process.env.NODE_ENV !== 'production';
 
 export default defineNuxtConfig({
+  ssr: false, // Disable server-side rendering
   compatibilityDate: '2025-05-15',
   devtools: { enabled: isDevMode },
   typescript: {
@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   build: {
     transpile: ['vuetify'],
   },
-  modules: ['@nuxtjs/color-mode', '@vuetify/nuxt'],
+  modules: ['@nuxtjs/color-mode'],
   colorMode: {
     preference: 'system', // Default to system preference
     dataValue: 'theme', // activate data-theme in <html> tag
@@ -37,9 +37,9 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'node-server',
     output: {
-      dir: process.env.NUXT_OUTPUT_DIR || '.dist',
-      serverDir: process.env.NUXT_PUBLIC_SERVER || '.dist/server',
-      publicDir: process.env.NUXT_PUBLIC_DIR || '.dist/public',
+      dir: process.env.NUXT_OUTPUT_DIR || './.dist',
+      serverDir: process.env.NUXT_PUBLIC_SERVER || './.dist/server',
+      publicDir: process.env.NUXT_PUBLIC_DIR || './.dist/public',
     },
     routeRules: {
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
@@ -47,13 +47,16 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    plugins: [vuetify({ autoImport: true })],
     server: {
       fs: {
         allow: ['..'],
       },
     },
-    ssr: {
-      noExternal: ['vuetify'],
+    vue: {
+      template: {
+        transformAssetUrls,
+      },
     },
   },
 });

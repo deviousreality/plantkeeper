@@ -1,14 +1,20 @@
 // server/api/plants/[id].put.ts
 import { db, validateFieldId } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 import { mapPlantBodyToDbFields, validateFieldName, validateTaxonomyIds } from '~/server/utils/plants.db';
 import type { PlantModelPost } from '~/types/plant-models';
 import { getRouterParams, type H3Event } from 'h3';
 
 const handler = async (event: H3Event, dbInstance = db) => {
   const context = 'plants';
+  // Get authenticated user from session
+  const user = await requireAuth(dbInstance, event);
   const body = (await readBody(event)) as PlantModelPost;
   const params = getRouterParams(event);
   const plant_id = parseInt(params['id'] as string);
+
+  // Override user_id from session
+  body.user_id = user.id;
 
   // console.log('Received plant data:', JSON.stringify(body, null, 2));
 

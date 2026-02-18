@@ -1,7 +1,9 @@
 // server/api/market-prices/[id].post.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   if (!event.context.params?.id) {
     throw createError({
       statusCode: 400,

@@ -1,7 +1,9 @@
 // server/api/market-prices/[id]/[priceId].delete.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const plantId = parseInt(event.context.params.id);
   const priceId = parseInt(event.context.params.priceId);
 

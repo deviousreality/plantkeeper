@@ -1,7 +1,9 @@
 import { db, validateFieldId } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
   const context = 'plant_photos';
+  await requireAuth(db, event);
   const plantId = parseInt(getRouterParam(event, 'id') as string) as number;
   const guid = getRouterParam(event, 'guid') as string;
 

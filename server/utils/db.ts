@@ -145,6 +145,17 @@ export const generateForeignKeySeedTestData = (db: Database.Database): void => {
 };
 
 // Initialize the database connection
-const db = createDatabase(getDbPath());
+let _db = createDatabase(getDbPath());
+
+// In test environment, use globalThis.db if available (set by vi.stubGlobal)
+// This allows tests to inject their own database instance
+const db = new Proxy(_db, {
+  get(target, prop) {
+    const testDb = (globalThis as any).db;
+    const activeDb = testDb || target;
+    const value = activeDb[prop];
+    return typeof value === 'function' ? value.bind(activeDb) : value;
+  },
+});
 
 export { db };

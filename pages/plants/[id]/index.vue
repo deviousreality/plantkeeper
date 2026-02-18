@@ -310,7 +310,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Plant } from '~/types/database';
+import type { Plant, PlantFormData } from '~/types/database';
 
 definePageMeta({
   middleware: 'auth',
@@ -341,7 +341,7 @@ async function fetchPlantData(): Promise<void> {
 
   try {
     const plantData = await $fetch(`/api/plants/${plantId}`);
-    plant.value = plantData;
+    plant.value = plantData as Plant;
     // TODO: Implement later
     // careLogs.value = plantData.careLogs || [];
     // careTips.value = plantData.careTips || [];

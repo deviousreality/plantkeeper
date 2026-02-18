@@ -1,6 +1,7 @@
 // server/api/auth/login.post.ts
 import { db } from '~/server/utils/db';
 import { isApiError } from '~/server/utils/errors';
+import { createSession, setSessionCookie } from '~/server/utils/session';
 import bcrypt from 'bcryptjs';
 import { User } from '~/types';
 
@@ -27,7 +28,11 @@ export default defineEventHandler(async (event, dbInstance = db) => {
   }
 
   try {
-    const user = dbInstance.prepare('SELECT * FROM users WHERE username = ?').get(username) as User | undefined;
+    // Normalize username to lowercase for case-insensitive comparison
+    const normalizedUsername = username.toLowerCase();
+    const user = dbInstance.prepare('SELECT * FROM users WHERE username = ?').get(normalizedUsername) as
+      | User
+      | undefined;
 
     if (!user) {
       throw createError({
@@ -45,6 +50,11 @@ export default defineEventHandler(async (event, dbInstance = db) => {
         message: 'Invalid credentials',
       });
     }
+
+    // Create session and set HTTP-only cookie
+    const session = await createSession(dbInstance, user.id);
+    setSessionCookie(event, session.id, session.expiresAt);
+
     const response: UserResponse = {
       id: user.id,
       username: user.username,

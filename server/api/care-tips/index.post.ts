@@ -1,7 +1,9 @@
 // server/api/care-tips/index.post.ts
 import { db } from '../../utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const body = await readBody(event);
 
   if (!body.species || !body.tip) {

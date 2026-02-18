@@ -43,7 +43,7 @@
         required />
 
       <v-alert
-        v-if="auth.error"
+        v-if="auth.error && auth.error.length > 0"
         type="error"
         class="mt-4"
         density="compact"
@@ -87,6 +87,9 @@ const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const isLoading = ref(false);
+
+// Clear any previous errors before rendering
+auth.error.value = null;
 
 // Helper function to safely get redirect URL
 function getRedirectUrl(redirectQuery: LocationQueryValue | LocationQueryValue[] | undefined): string {

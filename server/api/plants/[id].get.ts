@@ -1,11 +1,14 @@
 // server/api/plants/[id].get.ts
 import { db, handleDatatableFetchError, nullToUndefined, validateFieldId } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 import type { PlantTableRow } from '~/types/database';
 import { plantTableRowToPlant } from '~/server/utils/plants.db';
 import { getRouterParams, type H3Event } from 'h3';
 
 const handler = async (event: H3Event, dbInstance = db) => {
   const context = 'photos';
+  // Get authenticated user from session
+  const user = await requireAuth(dbInstance, event);
   const params = getRouterParams(event);
   const plant_id = parseInt(params['id'] as string);
 

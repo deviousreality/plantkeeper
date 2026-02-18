@@ -1,7 +1,9 @@
 // server/api/taxonomy/genus/index.post.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   try {
     const body = await readBody(event);
 

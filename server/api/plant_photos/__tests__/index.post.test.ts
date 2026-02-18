@@ -1,5 +1,5 @@
 import { describe, expect, vi, it, beforeEach, afterEach } from 'vitest';
-import { useDBTestUtils, useH3TestUtils } from '~/test/setup';
+import { useDBTestUtils, useH3TestUtils, mockAuth } from '~/test/setup';
 import { createMockH3Event } from '~/test/mocks/h3-events';
 import { type Database } from 'better-sqlite3';
 import FormData from 'form-data';
@@ -29,9 +29,10 @@ describe('POST /api/plant_photos', async () => {
     0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
   ]);
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     dbInstance = useDBTestUtils();
+    await mockAuth(); // Mock authentication for session-based auth
   });
 
   afterEach(() => {

@@ -1,0 +1,16 @@
+# Exclude development and unnecessary files
+node_modules/
+.git/
+.vscode/
+*.log
+*.md
+*.test.*
+*.spec.*
+coverage/
+.env*
+
+# Include only production build and essential files
+.data/
+.dist/
+.nuxt/
+.vscode/

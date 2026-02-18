@@ -5,6 +5,17 @@ import { Database } from 'better-sqlite3';
 import { Plant, PlantModelPost } from '~/types';
 import type { H3Error } from 'h3';
 
+// Mock session authentication
+vi.mock('~/server/utils/session', () => ({
+  requireAuth: vi.fn((db, event) =>
+    Promise.resolve({
+      id: 1,
+      username: 'testuser',
+      email: 'test@example.com',
+    })
+  ),
+}));
+
 describe('POST /api/plants', async () => {
   let dbInstance: Database;
   useH3TestUtils();

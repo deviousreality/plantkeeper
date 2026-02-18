@@ -1,12 +1,16 @@
 // server/api/plant_photos/index.post.ts
+
 import { validatePlantPhotoData } from '~/server/utils/plant_photos.db';
 import { db, handleDataTableTransactionError, validateFieldId } from '~/server/utils/db';
 import { PlantPhotosMockFile, PlantPhotosTableRowInsert } from '~/types/database';
+import { requireAuth } from '~/server/utils/session';
 // import { readMultipartFormData } from 'h3';
 import type { H3Event } from 'h3';
 
 const handler = async (event: H3Event, dbInstance = db) => {
   const context = 'plant_photos';
+  // Require authentication
+  await requireAuth(dbInstance, event);
   // Read the multipart form data
   const formData = await readMultipartFormData(event);
   if (!formData) {

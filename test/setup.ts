@@ -6,11 +6,13 @@ import { buildTables } from '~/server/utils/db_build';
 
 type Handler = (event: H3Event<EventHandlerRequest>) => Promise<unknown>;
 
-function useDBTestUtils() {
+function useDBTestUtils(options: { skipUserSeed?: boolean } = {}) {
   const db = new Database(':memory:');
   db.pragma('foreign_keys = ON');
   buildTables(db);
-  generateUserTestData(db);
+  if (!options.skipUserSeed) {
+    generateUserTestData(db);
+  }
   generateForeignKeySeedTestData(db);
   vi.stubGlobal('db', db);
   return db;
@@ -18,11 +20,10 @@ function useDBTestUtils() {
 
 function useH3TestUtils() {
   const h3 = vi.hoisted(() => ({
-    createError: vi.fn().mockImplementation(() => {
-      return {
-        statusCode: 500,
-        message: 'Bad Request',
-      };
+    createError: vi.fn().mockImplementation((options) => {
+      const error = new Error(options.message || options.statusMessage || 'Error');
+      Object.assign(error, options);
+      return error;
     }),
     defineEventHandler: vi.fn((handler: Handler) => {
       return handler;
@@ -47,4 +48,17 @@ function useH3TestUtils() {
   return h3;
 }
 
-export { useDBTestUtils, useH3TestUtils };
+/**
+ * Call this in your test before running code that requires authentication.
+ * Example:
+ *   mockAuth({ id: 1, username: 'testuser', email: 'test@example.com' })
+ */
+async function mockAuth(user = { id: 1, username: 'testuser', email: 'test@example.com' }) {
+  // Dynamically import to avoid hoisting conflicts with vi.mock()
+  const sessionUtils = await import('~/server/utils/session');
+  vi.spyOn(sessionUtils, 'getSessionIdFromCookie').mockReturnValue('mock-session-id');
+  vi.spyOn(sessionUtils, 'getCurrentUser').mockResolvedValue(user);
+  vi.spyOn(sessionUtils, 'requireAuth').mockResolvedValue(user);
+}
+
+export { useDBTestUtils, useH3TestUtils, mockAuth };

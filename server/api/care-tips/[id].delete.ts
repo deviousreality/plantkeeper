@@ -1,7 +1,9 @@
 // server/api/care-tips/[id].delete.ts
 import { db } from '../../utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const tipId = getRouterParam(event, 'id');
 
   if (!tipId) {
