@@ -16,8 +16,6 @@ const handler = async (event: H3Event, dbInstance = db) => {
   // Override user_id from session
   body.user_id = user.id;
 
-  // console.log('Received plant data:', JSON.stringify(body, null, 2));
-
   validateFieldId(plant_id);
 
   validateFieldName(body);
@@ -30,10 +28,7 @@ const handler = async (event: H3Event, dbInstance = db) => {
 
     const plantData = mapPlantBodyToDbFields(body);
 
-    // console.log('Processed plant data for database:', JSON.stringify(plantData, null, 2));
-
     const values = Object.values(plantData);
-    // console.log('values for database:', JSON.stringify(values, null, 2));
     dbInstance
       .prepare(
         `
@@ -65,22 +60,6 @@ const handler = async (event: H3Event, dbInstance = db) => {
       `
       )
       .run(...values, plant_id, plantData.user_id);
-
-    // console.log('Updated plant ID:', plant_id);
-
-    // if (plantData.is_personal) {
-    //   const personalData = undefinedToNull({
-    //     plant_id: plantId,
-    //     count: body.personal_count,
-    //   });
-    //   dbInstance.prepare(
-    //     `
-    //   UPDATE personal_plants
-    //   set count = ?
-    //   WHERE plant_id = ?
-    //   `
-    //   ).run(personalData.count, personalData.plant_id);
-    // }
 
     dbInstance.exec('COMMIT');
 

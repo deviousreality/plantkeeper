@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
       message: 'Family deleted successfully',
     };
   } catch (error) {
-    console.error(`Error deleting family ${id}:`, error);
+    console.error(`Error deleting family ${id}:`, error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error deleting family',

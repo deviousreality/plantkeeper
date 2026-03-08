@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
       name: body.name.trim(),
     };
   } catch (error) {
-    console.error('Error creating plant family:', error);
+    console.error('Error creating plant family:', error instanceof Error ? error.message : String(error));
     if (error instanceof Error && 'statusCode' in error) {
       throw error;
     }

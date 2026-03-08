@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
     return newTip;
   } catch (error) {
-    console.error('Error creating care tip:', error);
+    console.error('Error creating care tip:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to create care tip.',

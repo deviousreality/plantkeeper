@@ -1,7 +1,10 @@
 // server/api/weather/forecast.get.ts
 import axios from 'axios';
+import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const query = getQuery(event);
   const city = query.city?.toString();
 
@@ -13,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig();
-  const apiKey = config.public.weatherApiKey;
+  const apiKey = config.weatherApiKey;
 
   try {
     // Call OpenWeatherMap 5-day forecast API
@@ -57,7 +60,7 @@ export default defineEventHandler(async (event) => {
 
     return processedForecast.slice(0, 5); // Limit to 5 days
   } catch (error) {
-    console.error('Error fetching weather forecast:', error);
+    console.error('Error fetching weather forecast:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: error.response?.status || 500,
       statusMessage: error.response?.data?.message || 'Failed to fetch weather forecast.',

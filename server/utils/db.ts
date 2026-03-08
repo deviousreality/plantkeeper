@@ -34,7 +34,6 @@ export const safelyPrepare = (sql: string): Database.Statement => {
     return db.prepare(sql);
   } catch (error) {
     console.error(`SQL preparation error: ${error instanceof Error ? error.message : String(error)}`);
-    console.error(`Failed SQL: ${sql}`);
     throw new Error('Failed to prepare SQL statement');
   }
 };
@@ -103,20 +102,20 @@ export const handleDataTableTransactionError = (
     console.log('Transaction was already rolled back');
   }
 
-  // console.error(`Error creating ${context}:`, error);
-  // console.error('Original request body:', JSON.stringify(body, null, 2));
-  // console.error('Full error details:', error);
+  // Log detailed error server-side only (not sent to client)
+  console.error(`Error creating ${context}:`, error instanceof Error ? error.message : String(error));
   throw createError({
     statusCode: 500,
-    message: `Server error creating ${context}: ${error instanceof Error ? error.message : String(error)}`,
+    message: `Server error creating ${context}`,
   });
 };
 
 export const handleDatatableFetchError = (context: string, error: unknown): H3Error => {
-  // console.error(`Error fetching ${context}:`, error);
+  // Log detailed error server-side only (not sent to client)
+  console.error(`Error fetching ${context}:`, error instanceof Error ? error.message : String(error));
   throw createError({
     statusCode: 500,
-    message: `Server error fetching ${context}: ${error instanceof Error ? error.message : String(error)}`,
+    message: `Server error fetching ${context}`,
   });
 };
 

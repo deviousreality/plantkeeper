@@ -30,9 +30,7 @@ export default defineEventHandler(async (event) => {
       let base64Image = '';
       if (plantPhoto.image && Buffer.isBuffer(plantPhoto.image)) {
         base64Image = `data:${plantPhoto.mime_type};base64,${plantPhoto.image.toString('base64')}`;
-        console.log('Converted to base64, length:', base64Image.length, 'preview:', base64Image.substring(0, 50));
       } else {
-        console.log('Image is not a Buffer:', typeof plantPhoto.image, plantPhoto.image?.constructor?.name);
       }
 
       return {
@@ -50,7 +48,7 @@ export default defineEventHandler(async (event) => {
       photos: processedPhotos,
     };
   } catch (error) {
-    console.error('Error fetching plant photos:', error);
+    console.error('Error fetching plant photos:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch plant photos',

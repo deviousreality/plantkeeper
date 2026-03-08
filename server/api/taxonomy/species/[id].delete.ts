@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
       message: 'Species deleted successfully',
     };
   } catch (error) {
-    console.error(`Error deleting species ${id}:`, error);
+    console.error(`Error deleting species ${id}:`, error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error deleting species',

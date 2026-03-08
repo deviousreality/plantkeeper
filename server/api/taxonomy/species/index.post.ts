@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
       genusId,
     };
   } catch (error) {
-    console.error('Error creating species:', error);
+    console.error('Error creating species:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error creating species',

@@ -72,12 +72,19 @@ const isLoading = ref(false);
 // Clear any previous errors before rendering
 auth.error.value = null;
 
-// Helper function to safely get redirect URL
+// Helper function to safely get redirect URL — prevents open redirect attacks
 function getRedirectUrl(redirectQuery: LocationQueryValue | LocationQueryValue[] | undefined): string {
-  if (typeof redirectQuery === 'string') {
-    return redirectQuery;
+  if (typeof redirectQuery !== 'string') {
+    return '/plants';
   }
-  return '/plants';
+
+  // Must start with / and must not start with // (protocol-relative URL)
+  // Must not contain :// (absolute URL schemes like http://, https://, javascript://)
+  if (!redirectQuery.startsWith('/') || redirectQuery.startsWith('//') || redirectQuery.includes('://')) {
+    return '/plants';
+  }
+
+  return redirectQuery;
 }
 
 const rules = {

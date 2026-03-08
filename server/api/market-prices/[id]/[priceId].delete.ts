@@ -37,7 +37,10 @@ export default defineEventHandler(async (event) => {
       message: 'Price record deleted successfully',
     };
   } catch (error) {
-    console.error(`Error deleting price record ${priceId} for plant ${plantId}:`, error);
+    console.error(
+      `Error deleting price record ${priceId} for plant ${plantId}:`,
+      error instanceof Error ? error.message : String(error)
+    );
     throw createError({
       statusCode: 500,
       message: 'Server error deleting price record',

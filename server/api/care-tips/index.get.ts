@@ -1,7 +1,9 @@
 // server/api/care-tips/index.get.ts
 import { db } from '../../utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const query = getQuery(event);
   const search = query.search?.toString();
 
@@ -35,7 +37,7 @@ export default defineEventHandler(async (event) => {
 
     return tips;
   } catch (error) {
-    console.error('Error fetching care tips:', error);
+    console.error('Error fetching care tips:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to fetch care tips.',

@@ -33,7 +33,6 @@ export async function handler(event: H3Event, dbInstance = db) {
 
     return plants;
   } catch (error) {
-    // console.error('Error fetching plants:', error);
     handleDatatableFetchError(context, error as unknown);
     return null;
   }

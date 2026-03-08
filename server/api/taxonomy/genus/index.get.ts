@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     return genus;
   } catch (error) {
-    console.error('Error fetching genus entries:', error);
+    console.error('Error fetching genus entries:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error fetching genus entries',

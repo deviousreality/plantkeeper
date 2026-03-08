@@ -66,7 +66,7 @@ export default defineEventHandler(async (event: H3Event) => {
       data: propagations,
     };
   } catch (error) {
-    console.error('Error fetching plant propagation records:', error);
+    console.error('Error fetching plant propagation records:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Error fetching plant propagation records',

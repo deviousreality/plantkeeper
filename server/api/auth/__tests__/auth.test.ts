@@ -429,4 +429,45 @@ describe('POST /api/auth/register', async () => {
     expect(user).toBeDefined();
     expect(user.username).toBe('mixedcaseuser');
   });
+
+  it('should return 400 if password is shorter than 6 characters', async () => {
+    const event = createMockH3Event({
+      body: {
+        username: 'newuser',
+        password: '12345',
+      },
+    }) as H3Event;
+
+    await expect(handler.default(event)).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'Password must be at least 6 characters long',
+    });
+  });
+
+  it('should accept a password that is exactly 6 characters', async () => {
+    const event = createMockH3Event({
+      body: {
+        username: 'sixcharuser',
+        password: '123456',
+      },
+    }) as H3Event;
+
+    const response = (await handler.default(event)) as any;
+    expect(response).toBeDefined();
+    expect(response.username).toBe('sixcharuser');
+  });
+
+  it('should return 400 if password is a single character', async () => {
+    const event = createMockH3Event({
+      body: {
+        username: 'newuser',
+        password: 'a',
+      },
+    }) as H3Event;
+
+    await expect(handler.default(event)).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'Password must be at least 6 characters long',
+    });
+  });
 });

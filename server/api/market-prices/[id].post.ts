@@ -51,7 +51,10 @@ export default defineEventHandler(async (event) => {
       message: 'Price record created successfully',
     };
   } catch (error) {
-    console.error(`Error adding price record for plant ${plantId}:`, error);
+    console.error(
+      `Error adding price record for plant ${plantId}:`,
+      error instanceof Error ? error.message : String(error)
+    );
     throw createError({
       statusCode: 500,
       message: 'Server error adding price record',

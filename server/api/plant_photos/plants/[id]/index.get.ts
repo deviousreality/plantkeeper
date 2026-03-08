@@ -22,7 +22,6 @@ export default defineEventHandler(async (event) => {
       .all(plant_id, PlantPhotosSizeType.Small) as PlantPhotosTableRow[];
     // Convert to application type
     const plantPhotos = plantPhotosTableRowsToPlantPhotos(plantPhotosRows);
-    console.log(`Read ${context} from database:`, JSON.stringify(plantPhotos, null, 2));
     return plantPhotos;
     // Get care logs for this plant
   } catch (error) {

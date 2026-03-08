@@ -37,10 +37,16 @@ const handler = async (event: H3Event, dbInstance = db) => {
       });
     }
 
+    // Verify the authenticated user owns this plant
+    if (PlantTableRow.user_id !== user.id) {
+      throw createError({
+        statusCode: 403,
+        message: 'Not authorized to view this plant',
+      });
+    }
+
     // Convert to application type
     const plant = plantTableRowToPlant(PlantTableRow);
-
-    // console.log('Read Plant from database:', JSON.stringify(plant, null, 2));
 
     // Get care logs for this plant
     const careLogsRaw = dbInstance
@@ -74,6 +80,9 @@ const handler = async (event: H3Event, dbInstance = db) => {
       careTips,
     };
   } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error;
+    }
     handleDatatableFetchError(context, error as unknown);
   }
   return null;

@@ -23,13 +23,6 @@ const handler = async (event: H3Event, dbInstance = db) => {
   const plantIdPart = formData.find((part) => part.name === 'plant_id');
   const filePart = formData.find((part) => part.name === 'image');
 
-  // Log what we received
-  // formData.forEach((part) => {
-  //   console.log(
-  //     `Form part: ${part.name}, ${part.filename || 'no filename'}, type: ${part.type || 'no type'}, size: ${part.data?.length || 0} bytes`
-  //   );
-  // });
-
   if (!plantIdPart) {
     validateFieldId(plantIdPart);
   }
@@ -38,6 +31,25 @@ const handler = async (event: H3Event, dbInstance = db) => {
     throw createError({
       statusCode: 400,
       message: 'Missing file data in form data',
+    });
+  }
+
+  // Validate file MIME type — only allow image types
+  const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const fileType = filePart.type || '';
+  if (!ALLOWED_MIME_TYPES.includes(fileType)) {
+    throw createError({
+      statusCode: 400,
+      message: `Invalid file type: ${fileType}. Allowed types: ${ALLOWED_MIME_TYPES.join(', ')}`,
+    });
+  }
+
+  // Validate file size — max 10MB
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  if (filePart.data.length > MAX_FILE_SIZE) {
+    throw createError({
+      statusCode: 400,
+      message: `File too large: ${filePart.data.length} bytes. Maximum allowed: ${MAX_FILE_SIZE} bytes (10MB)`,
     });
   }
 
@@ -70,29 +82,9 @@ const handler = async (event: H3Event, dbInstance = db) => {
     } as File,
   };
 
-  // console.log('Received plant photos:', JSON.stringify(mockFile, null, 2));
-
   validateFieldId(mockFile.plant_id);
 
   const plantPhotoData = await validatePlantPhotoData(mockFile);
-
-  // console.log(
-  //   'Received plant photos:',
-  //   JSON.stringify(
-  //     plantPhotoData.map((photo) => {
-  //       return {
-  //         plantId: photo.plant_id,
-  //         filename: photo.filename,
-  //         file: '[Buffer]',
-  //         mime_type: photo.mime_type,
-  //         size_type: photo.size_type,
-  //         // Exclude the actual image buffer from logs for brevity
-  //       };
-  //     }),
-  //     null,
-  //     2
-  //   )
-  // );
 
   // Use transaction to ensure tables are updated
 

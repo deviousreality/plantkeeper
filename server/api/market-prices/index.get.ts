@@ -1,17 +1,10 @@
 // server/api/market-prices/index.get.ts
 import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
-  // Get user ID from query param
-  const query = getQuery(event);
-  const userId = parseInt(query.userId as string);
-
-  if (!userId) {
-    throw createError({
-      statusCode: 400,
-      message: 'User ID is required',
-    });
-  }
+  const user = await requireAuth(db, event);
+  const userId = user.id;
 
   try {
     // Get plants with their latest market price
@@ -37,7 +30,7 @@ export default defineEventHandler(async (event) => {
       latestPrice: plant.latestPrice ? JSON.parse(plant.latestPrice) : null,
     }));
   } catch (error) {
-    console.error('Error fetching plants with market prices:', error);
+    console.error('Error fetching plants with market prices:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error fetching plants with market prices',

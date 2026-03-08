@@ -109,4 +109,127 @@ describe('POST /api/plant_photos', async () => {
       });
     }
   });
+
+  it('should return 400 for invalid file type', async () => {
+    h3.readMultipartFormData.mockResolvedValue([
+      {
+        name: 'plant_id',
+        data: Buffer.from('1'),
+        type: 'text/plain',
+      },
+      {
+        name: 'image',
+        filename: 'malware.exe',
+        data: Buffer.from('fake binary content'),
+        type: 'application/x-msdownload',
+      },
+    ]);
+
+    const event = createMockH3Event({
+      body: {},
+    });
+
+    try {
+      await handler.handler(event, dbInstance);
+      expect.unreachable('Should have thrown');
+    } catch (error) {
+      expect(error as H3Error).toMatchObject({
+        statusCode: 400,
+        message: expect.stringContaining('Invalid file type'),
+      });
+    }
+  });
+
+  it('should return 400 for file with no MIME type', async () => {
+    h3.readMultipartFormData.mockResolvedValue([
+      {
+        name: 'plant_id',
+        data: Buffer.from('1'),
+        type: 'text/plain',
+      },
+      {
+        name: 'image',
+        filename: 'unknown.bin',
+        data: Buffer.from('some data'),
+        // no type property
+      },
+    ]);
+
+    const event = createMockH3Event({
+      body: {},
+    });
+
+    try {
+      await handler.handler(event, dbInstance);
+      expect.unreachable('Should have thrown');
+    } catch (error) {
+      expect(error as H3Error).toMatchObject({
+        statusCode: 400,
+        message: expect.stringContaining('Invalid file type'),
+      });
+    }
+  });
+
+  it('should return 400 for file exceeding max size', async () => {
+    // Create a buffer larger than 10MB
+    const oversizedBuffer = Buffer.alloc(10 * 1024 * 1024 + 1);
+
+    h3.readMultipartFormData.mockResolvedValue([
+      {
+        name: 'plant_id',
+        data: Buffer.from('1'),
+        type: 'text/plain',
+      },
+      {
+        name: 'image',
+        filename: 'huge_photo.png',
+        data: oversizedBuffer,
+        type: 'image/png',
+      },
+    ]);
+
+    const event = createMockH3Event({
+      body: {},
+    });
+
+    try {
+      await handler.handler(event, dbInstance);
+      expect.unreachable('Should have thrown');
+    } catch (error) {
+      expect(error as H3Error).toMatchObject({
+        statusCode: 400,
+        message: expect.stringContaining('File too large'),
+      });
+    }
+  });
+
+  it('should accept valid image MIME types', async () => {
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    for (const mimeType of validTypes) {
+      vi.clearAllMocks();
+      await mockAuth();
+
+      h3.readMultipartFormData.mockResolvedValue([
+        {
+          name: 'plant_id',
+          data: Buffer.from('1'),
+          type: 'text/plain',
+        },
+        {
+          name: 'image',
+          filename: `photo.${mimeType.split('/')[1]}`,
+          data: tinyPng,
+          type: mimeType,
+        },
+      ]);
+
+      const event = createMockH3Event({
+        body: {},
+      });
+
+      const response = (await handler.handler(event, dbInstance)) as any;
+      expect(response.success).toBe(true);
+    }
+  });
 });

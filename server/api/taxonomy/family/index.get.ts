@@ -15,7 +15,7 @@ export default defineEventHandler(async () => {
 
     return families;
   } catch (error) {
-    console.error('Error fetching plant families:', error);
+    console.error('Error fetching plant families:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error fetching plant families',

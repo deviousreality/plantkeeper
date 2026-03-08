@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting care tip:', error);
+    console.error('Error deleting care tip:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to delete care tip.',

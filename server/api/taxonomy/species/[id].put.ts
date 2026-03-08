@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
       genusId,
     };
   } catch (error) {
-    console.error(`Error updating species ${id}:`, error);
+    console.error(`Error updating species ${id}:`, error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error updating species',

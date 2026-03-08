@@ -82,4 +82,56 @@ describe('GET /api/plants[id]', async () => {
       });
     }
   });
+
+  it('should return 403 if plant belongs to another user', async () => {
+    // Insert a user with id=2
+    dbInstance
+      .prepare('INSERT INTO users (id, username, password, email) VALUES (?, ?, ?, ?)')
+      .run(2, 'otheruser', 'password', 'other@example.com');
+
+    // Insert a plant owned by user 2
+    dbInstance
+      .prepare(
+        `INSERT INTO plants (user_id, name, common_name, is_personal, is_favorite, has_fragrance, is_petsafe, can_sell) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(2, 'Other Plant', 'Other Common', 0, 0, 0, 0, 0);
+
+    const plantRow = dbInstance.prepare('SELECT id FROM plants WHERE user_id = 2').get() as { id: number };
+
+    const event = createMockH3Event({
+      body: {},
+      params: { id: String(plantRow.id) },
+    });
+
+    // The mock requireAuth returns user id=1, but the plant belongs to user id=2
+    try {
+      await handler.handler(event, dbInstance);
+      expect.unreachable('Should have thrown');
+    } catch (error) {
+      expect(error as H3Error).toMatchObject({
+        statusCode: 403,
+        message: 'Not authorized to view this plant',
+      });
+    }
+  });
+
+  it('should return plant when user owns it', async () => {
+    // Insert a plant owned by user 1 (the mocked user)
+    dbInstance
+      .prepare(
+        `INSERT INTO plants (user_id, name, common_name, is_personal, is_favorite, has_fragrance, is_petsafe, can_sell) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(1, 'My Plant', 'My Common', 0, 0, 0, 0, 0);
+
+    const plantRow = dbInstance.prepare('SELECT id FROM plants WHERE user_id = 1').get() as { id: number };
+
+    const event = createMockH3Event({
+      body: {},
+      params: { id: String(plantRow.id) },
+    });
+
+    const response = (await handler.handler(event, dbInstance)) as Plant;
+    expect(response).toBeDefined();
+    expect(response.name).toBe('My Plant');
+  });
 });

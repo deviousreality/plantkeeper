@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       name: body.name.trim(),
     };
   } catch (error) {
-    console.error(`Error updating family ${id}:`, error);
+    console.error(`Error updating family ${id}:`, error instanceof Error ? error.message : String(error));
     if (error instanceof Error && 'statusCode' in error) {
       throw error;
     }

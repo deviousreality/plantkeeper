@@ -26,7 +26,6 @@ export default defineEventHandler(async (event): Promise<TaxonomyResponse> => {
 
     // Scenario 1: No IDs provided - return list of families
     if (!familyId && !genusId) {
-      console.log('Fetching all families');
       response.families = db
         .prepare(
           `
@@ -42,8 +41,6 @@ export default defineEventHandler(async (event): Promise<TaxonomyResponse> => {
 
     // Scenario 2: Family ID and Genus ID provided - return family, genus, and species
     if (familyId && genusId) {
-      console.log(`Fetching family ${familyId}, genus ${genusId}, and species`);
-
       // Get family info
       const family = db
         .prepare(
@@ -99,8 +96,6 @@ export default defineEventHandler(async (event): Promise<TaxonomyResponse> => {
 
     // Scenario 3: Only Family ID provided - return family and genera in that family
     if (familyId && !genusId) {
-      console.log(`Fetching family ${familyId} and its genera`);
-
       // Get family info
       const family = db
         .prepare(
@@ -142,7 +137,7 @@ export default defineEventHandler(async (event): Promise<TaxonomyResponse> => {
       message: 'Invalid query parameters. Provide familyId alone, or familyId with genusId, or no parameters.',
     });
   } catch (error) {
-    console.error('Error fetching taxonomy data:', error);
+    console.error('Error fetching taxonomy data:', error instanceof Error ? error.message : String(error));
 
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error; // Re-throw createError errors

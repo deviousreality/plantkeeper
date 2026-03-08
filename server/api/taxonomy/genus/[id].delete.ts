@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
       message: 'Genus deleted successfully',
     };
   } catch (error) {
-    console.error('Error deleting genus:', error);
+    console.error('Error deleting genus:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error deleting genus',

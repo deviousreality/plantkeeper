@@ -41,7 +41,10 @@ export default defineEventHandler(async (event) => {
 
     return schedule || null;
   } catch (error) {
-    console.error(`Error fetching care schedule for plant ${plantId}:`, error);
+    console.error(
+      `Error fetching care schedule for plant ${plantId}:`,
+      error instanceof Error ? error.message : String(error)
+    );
     throw createError({
       statusCode: 500,
       message: 'Server error fetching care schedule',

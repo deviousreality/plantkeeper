@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
       familyId,
     };
   } catch (error) {
-    console.error('Error updating genus:', error);
+    console.error('Error updating genus:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error updating genus',

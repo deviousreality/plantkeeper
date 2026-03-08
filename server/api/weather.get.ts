@@ -1,7 +1,10 @@
 // server/api/weather.get.ts
 import axios from 'axios';
+import { db } from '~/server/utils/db';
+import { requireAuth } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(db, event);
   const config = useRuntimeConfig();
   const { lat, lon, city } = getQuery(event);
 
@@ -12,7 +15,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const apiKey = config.public.weatherApiKey;
+  const apiKey = config.weatherApiKey;
 
   try {
     let url;
@@ -34,7 +37,7 @@ export default defineEventHandler(async (event) => {
       sunset: response.data.sys.sunset,
     };
   } catch (error) {
-    console.error('Error fetching weather data:', error);
+    console.error('Error fetching weather data:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Server error fetching weather data',

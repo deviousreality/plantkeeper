@@ -4,9 +4,9 @@ import 'dotenv/config';
 
 // Replace with your actual admin user seed data
 const adminUser = {
-  username: process.env['ADMIN_USERNAME'] || 'admin',
-  password: process.env['ADMIN_PASSWORD'] || 'admin123',
-  email: process.env['ADMIN_EMAIL'] || 'admin@plantkeeper.local',
+  username: process.env['ADMIN_USERNAME'],
+  password: process.env['ADMIN_PASSWORD'],
+  email: process.env['ADMIN_EMAIL'],
 };
 
 export function up(db: Database.Database) {

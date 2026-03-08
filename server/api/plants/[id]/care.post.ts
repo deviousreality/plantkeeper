@@ -102,7 +102,7 @@ export default defineEventHandler(async (event) => {
       id: logResult.lastInsertRowid,
     };
   } catch (error) {
-    console.error('Error recording care action:', error);
+    console.error('Error recording care action:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to record care action.',

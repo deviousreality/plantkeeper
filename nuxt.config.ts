@@ -30,9 +30,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     isDevMode: isDevMode,
-    public: {
-      weatherApiKey: process.env.WEATHER_API_KEY || 'your-weather-api-key', // Use environment variable in production
-    },
+    weatherApiKey: process.env.WEATHER_API_KEY || '',
+    public: {},
   },
   nitro: {
     preset: 'node-server',
@@ -42,8 +41,29 @@ export default defineNuxtConfig({
       publicDir: process.env.NUXT_PUBLIC_DIR || './.dist/public',
     },
     routeRules: {
+      '/**': {
+        headers: {
+          'X-Frame-Options': 'DENY',
+          'X-Content-Type-Options': 'nosniff',
+          'X-XSS-Protection': '1; mode=block',
+          'Referrer-Policy': 'strict-origin-when-cross-origin',
+          'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+          'Content-Security-Policy':
+            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'",
+        },
+      },
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
-      '/api/**': { cors: true },
+      '/api/**': {
+        cors: isDevMode,
+        headers: isDevMode
+          ? {}
+          : {
+              'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '',
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+              'Access-Control-Allow-Credentials': 'true',
+            },
+      },
     },
   },
   vite: {

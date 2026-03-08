@@ -62,13 +62,15 @@ export default defineEventHandler(async (event, dbInstance = db) => {
     };
     return response;
   } catch (err) {
-    console.error('Login error:', err);
-
-    // If it's already an API error with status code, rethrow it
+    // Log only safe information - avoid exposing sensitive details
     if (isApiError(err)) {
+      // For expected API errors, log only status code (no stack traces or details)
+      console.error(`Login failed: ${err.statusCode}`);
       throw err;
     }
 
+    // For unexpected errors, log only a generic message
+    console.error('Unexpected error during authentication');
     throw createError({
       statusCode: 500,
       message: 'Server error during authentication',

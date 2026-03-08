@@ -101,7 +101,7 @@ export default defineEventHandler(async (event: H3Event) => {
       data: mappedPropagation,
     };
   } catch (error) {
-    console.error('Error creating propagation record:', error);
+    console.error('Error creating propagation record:', error instanceof Error ? error.message : String(error));
     throw createError({
       statusCode: 500,
       message: 'Error creating propagation record',

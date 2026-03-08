@@ -29,6 +29,14 @@ export default defineEventHandler(async (event) => {
       message: 'Username and password are required',
     });
   }
+
+  if (password.length < 6) {
+    throw createError({
+      statusCode: 400,
+      message: 'Password must be at least 6 characters long',
+    });
+  }
+
   try {
     // Normalize username to lowercase for case-insensitive comparison
     const normalizedUsername = username.toLowerCase();
@@ -65,13 +73,15 @@ export default defineEventHandler(async (event) => {
       email,
     };
   } catch (err) {
-    console.error('Registration error:', err);
-
-    // If it's already an API error with status code, rethrow it
+    // Log only safe information - avoid exposing sensitive details
     if (isApiError(err)) {
+      // For expected API errors, log only status code (no stack traces or details)
+      console.error(`Registration failed: ${err.statusCode}`);
       throw err;
     }
 
+    // For unexpected errors, log only a generic message
+    console.error('Unexpected error during registration');
     throw createError({
       statusCode: 500,
       message: 'Server error during registration',
